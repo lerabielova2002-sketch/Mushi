@@ -1,11 +1,13 @@
+import Game from './components/Game'
+import Hud from './components/Hud'
+import { GameProvider } from './context/GameContext'
 
-
-function App( ) {
-
+function App() {
   return (
-    <>
-    mushroom mushi
-    </>
+    <GameProvider>
+      <Game />
+      <Hud />
+    </GameProvider>
   )
 }
 
