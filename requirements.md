@@ -1,15 +1,22 @@
 # Full Ukraine — Requirements
 
 ## 1. Overview
-<!-- One or two sentences: what is this project and who is it for? -->
+ Проєкт для хакатона Грибочок Муші. Гра від 3 особи. Стиль гри лоу полі
+
 
 ## 2. Goals
--
+- Створити гру для хакатона з допомогою ШІ
+- ШІ не повинен робити всю роботу 
+- Використовувати зазначений стек 
+- стиль лоу полі
 
 ## 3. Functional requirements
 | ID  | Requirement | Priority (must/should/could) |
 | --- | ----------- | ---------------------------- |
-| F1  |             |                              |
+| F1  | Створити міні двіжок | Рух персонажа по всіх осях |
+| F2  | Додавання асетів |Можливість завантажити в папку 3д модель + текстуру |
+| F3  | Меню |  Створити базову навігацію в меню  |
+| F4  | Створити рівень|Додай один рівень фундамент з моделями поле підлоги небо |
 
 ## 4. Non-functional requirements
 - Browsers / devices supported:
@@ -17,13 +24,18 @@
 - Accessibility:
 
 ## 5. Pages / screens
--
+- Меню
+- Налаштування
+- Гра
 
 ## 6. Tech stack
-- HTML, CSS, JavaScript (vanilla)
+- React Three Fiber, Drei, Rapier, Zustand
 
 ## 7. Out of scope
--
+- Реєстрація та авторизація користувача
+- Повна генерація проєкту з використанням ШІ
+- Плата за гру
+- Бекенд
 
 ## 8. Open questions
 -
