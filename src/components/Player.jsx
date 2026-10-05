@@ -1,13 +1,38 @@
-import { forwardRef, useRef } from 'react'
+import { forwardRef, useEffect, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
+import { useGame } from '../context/GameContext'
 import useKeyboard from '../hooks/useKeyboard'
+import playSound from '../audio/playNote'
+
+const noteKeys = [
+  ['Digit1', 'do'],
+  ['Digit2', 're'],
+  ['Digit3', 'mi'],
+]
 
 // Головний герой (гриб Муші). Зараз — просто червона коробка-заглушка.
 // ref приходить з Level1, щоб камера знала, за ким їхати.
 const Player = forwardRef(function Player({ platforms = [] }, ref) {
   const keys = useKeyboard()
+  const { addFluteNote } = useGame()
   const velocityY = useRef(0)
   const isGrounded = useRef(true)
+  const spaceWasPressed = useRef(false)
+
+  useEffect(() => {
+    const playPressedNote = (event) => {
+      if (event.repeat) return
+
+      const note = noteKeys.find(([key]) => key === event.code)?.[1]
+      if (!note) return
+
+      playSound(note)
+      addFluteNote(note)
+    }
+
+    window.addEventListener('keydown', playPressedNote)
+    return () => window.removeEventListener('keydown', playPressedNote)
+  }, [addFluteNote])
 
   useFrame((state, delta) => {
     if (!ref || !ref.current) return
@@ -52,13 +77,14 @@ const Player = forwardRef(function Player({ platforms = [] }, ref) {
       isGrounded.current = false
     }
 
-    if (keys.Space && isGrounded.current) {
+    if (keys.Space && !spaceWasPressed.current && isGrounded.current) {
       velocityY.current = 7
       isGrounded.current = false
     }
+
+    spaceWasPressed.current = Boolean(keys.Space)
   })
 
-  // TODO: (я) гра на флейті (кнопка -> playSound)
   return (
     <mesh ref={ref} position={[0, 1, 0]}>
       <boxGeometry args={[1, 1, 1]} />
