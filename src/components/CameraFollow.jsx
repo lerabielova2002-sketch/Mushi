@@ -1,19 +1,68 @@
+import { useEffect, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 
-// Камера їде за об'єктом. targetRef — це ref на 3D-об'єкт (mesh) героя.
-// offset — де камера стоїть відносно героя [x, y, z].
+// Камера їде за героєм і обертається за ПКМ.
 function CameraFollow({ targetRef, offset = [0, 5, 10] }) {
-  // useFrame викликається кожен кадр
+  const yaw = useRef(-Math.PI / 4)
+  const pitch = useRef(0.7)
+  const distance = useRef(Math.hypot(offset[0], offset[1], offset[2]))
+  const isRotating = useRef(false)
+  const lastPointer = useRef({ x: 0, y: 0 })
+
+  useEffect(() => {
+    const handlePointerDown = (event) => {
+      if (event.button !== 2) return
+      isRotating.current = true
+      lastPointer.current = { x: event.clientX, y: event.clientY }
+    }
+
+    const handlePointerMove = (event) => {
+      if (!isRotating.current) return
+
+      const dx = event.clientX - lastPointer.current.x
+      const dy = event.clientY - lastPointer.current.y
+
+      yaw.current += dx * 0.005
+      pitch.current = Math.max(-1.2, Math.min(1.2, pitch.current + dy * 0.004))
+
+      lastPointer.current = { x: event.clientX, y: event.clientY }
+    }
+
+    const handlePointerUp = () => {
+      isRotating.current = false
+    }
+
+    const preventContextMenu = (event) => event.preventDefault()
+
+    window.addEventListener('pointerdown', handlePointerDown)
+    window.addEventListener('pointermove', handlePointerMove)
+    window.addEventListener('pointerup', handlePointerUp)
+    window.addEventListener('contextmenu', preventContextMenu)
+
+    return () => {
+      window.removeEventListener('pointerdown', handlePointerDown)
+      window.removeEventListener('pointermove', handlePointerMove)
+      window.removeEventListener('pointerup', handlePointerUp)
+      window.removeEventListener('contextmenu', preventContextMenu)
+    }
+  }, [])
+
   useFrame((state) => {
     const target = targetRef.current
     if (!target) return
 
-    state.camera.position.set(
-      target.position.x + offset[0],
-      target.position.y + offset[1],
-      target.position.z + offset[2],
-    )
-    state.camera.lookAt(target.position)
+    const cameraX =
+      target.position.x +
+      Math.sin(yaw.current) * Math.cos(pitch.current) * distance.current + offset[0] * 0.2
+    const cameraY =
+      target.position.y +
+      Math.sin(pitch.current) * distance.current + offset[1] * 0.3
+    const cameraZ =
+      target.position.z +
+      Math.cos(yaw.current) * Math.cos(pitch.current) * distance.current + offset[2] * 0.2
+
+    state.camera.position.set(cameraX, cameraY, cameraZ)
+    state.camera.lookAt(target.position.x, target.position.y + 1.2, target.position.z)
   })
 
   return null
