@@ -1,16 +1,29 @@
 import { useEffect, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
+import { Vector3 } from 'three'
 
 const MIN_DISTANCE = 3
 const MAX_DISTANCE = 20
 
+// Крупний план обличчя Муші (міні-гра). Змінюй числа, щоб підігнати кадр.
+// FACE_OFFSET — де стоїть камера відносно героя, FACE_LOOK_Y — на якій висоті дивиться.
+const FACE_OFFSET = [1, 0.15, 0]
+const FACE_LOOK_Y = 0
+
 // Камера їде за героєм і обертається за ПКМ.
-function CameraFollow({ targetRef, offset = [0, 5, 10] }) {
+function CameraFollow({ targetRef, offset = [0, 5, 10], closeUp = false }) {
   const yaw = useRef(-Math.PI / 4)
   const pitch = useRef(0.7)
   const distance = useRef(Math.hypot(offset[0], offset[1], offset[2]))
   const isRotating = useRef(false)
   const lastPointer = useRef({ x: 0, y: 0 })
+
+  // blend: 0 — звичайна камера, 1 — крупний план; плавно рухається між ними
+  const blend = useRef(0)
+  const normalPosition = useRef(new Vector3())
+  const facePosition = useRef(new Vector3())
+  const normalLook = useRef(new Vector3())
+  const faceLook = useRef(new Vector3())
 
   useEffect(() => {
     const handlePointerDown = (event) => {
@@ -60,22 +73,33 @@ function CameraFollow({ targetRef, offset = [0, 5, 10] }) {
     }
   }, [])
 
-  useFrame((state) => {
+  useFrame((state, delta) => {
     const target = targetRef.current
     if (!target) return
 
-    const cameraX =
-      target.position.x +
-      Math.sin(yaw.current) * Math.cos(pitch.current) * distance.current + offset[0] * 0.2
-    const cameraY =
-      target.position.y +
-      Math.sin(pitch.current) * distance.current + offset[1] * 0.3
-    const cameraZ =
-      target.position.z +
-      Math.cos(yaw.current) * Math.cos(pitch.current) * distance.current + offset[2] * 0.2
+    blend.current += ((closeUp ? 1 : 0) - blend.current) * Math.min(1, delta * 3)
 
-    state.camera.position.set(cameraX, cameraY, cameraZ)
-    state.camera.lookAt(target.position.x, target.position.y + 1.2, target.position.z)
+    normalPosition.current.set(
+      target.position.x +
+        Math.sin(yaw.current) * Math.cos(pitch.current) * distance.current + offset[0] * 0.2,
+      target.position.y +
+        Math.sin(pitch.current) * distance.current + offset[1] * 0.3,
+      target.position.z +
+        Math.cos(yaw.current) * Math.cos(pitch.current) * distance.current + offset[2] * 0.2,
+    )
+    normalLook.current.set(target.position.x, target.position.y + 1.2, target.position.z)
+
+    facePosition.current.set(
+      target.position.x + FACE_OFFSET[0],
+      target.position.y + FACE_OFFSET[1],
+      target.position.z + FACE_OFFSET[2],
+    )
+    faceLook.current.set(target.position.x, target.position.y + FACE_LOOK_Y, target.position.z)
+
+    state.camera.position.lerpVectors(normalPosition.current, facePosition.current, blend.current)
+
+    const look = normalLook.current.lerp(faceLook.current, blend.current)
+    state.camera.lookAt(look)
   })
 
   return null

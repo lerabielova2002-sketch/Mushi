@@ -8,7 +8,8 @@ function Enemy({ position = [3, 1, 0], melody = ['do', 're', 'mi'], playerRef, o
   const { fluteNotes, loseLife, status } = useGame()
   const meshRef = useRef(null)
   const basePosition = useRef([...position])
-  const offset = useRef(Math.random() * Math.PI * 2)
+  // Випадкове зміщення рахуємо один раз (useState із функцією), а не при кожному рендері
+  const [offset] = useState(() => Math.random() * Math.PI * 2)
   const cooldown = useRef(0)
   const [isDefeated, setIsDefeated] = useState(false)
 
@@ -16,8 +17,8 @@ function Enemy({ position = [3, 1, 0], melody = ['do', 're', 'mi'], playerRef, o
     if (!meshRef.current || isDefeated || status !== 'playing') return
 
     const elapsed = state.clock.elapsedTime
-    const swayX = Math.sin(elapsed * 1.5 + offset.current) * 1.1
-    const swayZ = Math.cos(elapsed * 1.6 + offset.current) * 0.8
+    const swayX = Math.sin(elapsed * 1.5 + offset) * 1.1
+    const swayZ = Math.cos(elapsed * 1.6 + offset) * 0.8
 
     meshRef.current.position.x = basePosition.current[0] + swayX
     meshRef.current.position.z = basePosition.current[2] + swayZ

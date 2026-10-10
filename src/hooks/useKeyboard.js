@@ -18,11 +18,16 @@ function useKeyboard() {
       setKeys((old) => ({ ...old, [event.code]: false }))
     }
 
+    // Якщо вікно втратило фокус, keyup не прийде — скидаємо клавіші, щоб герой не "застрягав" у русі
+    const clearKeys = () => setKeys({})
+
     window.addEventListener('keydown', down)
     window.addEventListener('keyup', up)
+    window.addEventListener('blur', clearKeys)
     return () => {
       window.removeEventListener('keydown', down)
       window.removeEventListener('keyup', up)
+      window.removeEventListener('blur', clearKeys)
     }
   }, [])
 

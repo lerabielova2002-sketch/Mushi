@@ -19,6 +19,9 @@ const MODEL_PATHS = {
   fall: '/Mushy%20FALL.glb',
 }
 
+// Починаємо вантажити моделі одразу при імпорті, а не при кожному рендері компонента
+Object.values(MODEL_PATHS).forEach((path) => useGLTF.preload(path))
+
 // Головний герой (гриб Муші), тепер з 3D-моделлю і анімаціями.
 const Player = forwardRef(function Player({ platforms = [], groundMeshes }, ref) {
   const keys = useKeyboard()
@@ -33,15 +36,14 @@ const Player = forwardRef(function Player({ platforms = [], groundMeshes }, ref)
   const rayOrigin = useRef(new Vector3())
   const rayDown = useRef(new Vector3(0, -1, 0))
 
+  // Другий промінь — горизонтальний, щоб гравець не проходив крізь скелі та дерева
+  const wallRaycaster = useRef(new Raycaster(undefined, undefined, 0, 0.45))
+  const wallDirection = useRef(new Vector3())
+
   const idleModel = useGLTF(MODEL_PATHS.idle)
   const walkModel = useGLTF(MODEL_PATHS.walk)
   const jumpModel = useGLTF(MODEL_PATHS.jump)
   const fallModel = useGLTF(MODEL_PATHS.fall)
-
-  useGLTF.preload(MODEL_PATHS.idle)
-  useGLTF.preload(MODEL_PATHS.walk)
-  useGLTF.preload(MODEL_PATHS.jump)
-  useGLTF.preload(MODEL_PATHS.fall)
 
   const idleRef = useRef(null)
   const walkRef = useRef(null)
@@ -94,6 +96,25 @@ const Player = forwardRef(function Player({ platforms = [], groundMeshes }, ref)
     return () => window.removeEventListener('keydown', playPressedNote)
   }, [addFluteNote, status])
 
+  // true, якщо в напрямку (dirX, dirZ) за 0.45 одиниці є стіна (скеля, дерево)
+  const isBlocked = (player, dirX, dirZ) => {
+    if (!groundMeshes) return false
+
+    // Промінь на рівні "колін": нижчі за 0.5 камінці гравець просто переступає
+    rayOrigin.current.set(player.position.x, player.position.y - 0.4, player.position.z)
+    wallDirection.current.set(dirX, 0, dirZ)
+    wallRaycaster.current.set(rayOrigin.current, wallDirection.current)
+
+    const hits = wallRaycaster.current.intersectObjects(groundMeshes, false)
+
+    // Ігноруємо майже горизонтальні поверхні (це земля, а не стіна)
+    return hits.some((hit) => {
+      if (!hit.face) return true
+      const normal = hit.face.normal.clone().transformDirection(hit.object.matrixWorld)
+      return Math.abs(normal.y) < 0.7
+    })
+  }
+
   useFrame((_, rawDelta) => {
     if (!ref || !ref.current || status !== 'playing') return
 
@@ -108,8 +129,16 @@ const Player = forwardRef(function Player({ platforms = [], groundMeshes }, ref)
     const moveZ = (keys.KeyD ? 1 : 0) - (keys.KeyA ? 1 : 0)
     const isMoving = Math.abs(moveX) > 0.01 || Math.abs(moveZ) > 0.01
 
-    player.position.x += moveX * moveSpeed * delta
-    player.position.z += moveZ * moveSpeed * delta
+    // Рухаємось окремо по X і Z, тому біля стіни можна ковзати вздовж неї
+    const stepX = moveX * moveSpeed * delta
+    const stepZ = moveZ * moveSpeed * delta
+
+    if (stepX !== 0 && !isBlocked(player, Math.sign(stepX), 0)) {
+      player.position.x += stepX
+    }
+    if (stepZ !== 0 && !isBlocked(player, 0, Math.sign(stepZ))) {
+      player.position.z += stepZ
+    }
 
     velocityY.current -= 18 * delta
     player.position.y += velocityY.current * delta

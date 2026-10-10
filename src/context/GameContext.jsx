@@ -8,7 +8,9 @@ export function GameProvider({ children }) {
   const [lives, setLives] = useState(3)
   const [score, setScore] = useState(0)
   const [fluteNotes, setFluteNotes] = useState([])
+  // status: 'playing' | 'rhythm' (міні-гра) | 'game-over' | 'victory'
   const [status, setStatus] = useState('playing')
+  const [enemiesDefeated, setEnemiesDefeated] = useState(false)
   const [resetVersion, setResetVersion] = useState(0)
 
   const loseLife = useCallback(() => {
@@ -34,6 +36,7 @@ export function GameProvider({ children }) {
     setScore(0)
     setFluteNotes([])
     setStatus('playing')
+    setEnemiesDefeated(false)
     setResetVersion((old) => old + 1)
   }, [])
 
@@ -44,12 +47,14 @@ export function GameProvider({ children }) {
         score,
         fluteNotes,
         status,
+        enemiesDefeated,
         resetVersion,
         loseLife,
         addScore,
         addFluteNote,
         resetGame,
         setStatus,
+        setEnemiesDefeated,
       }}
     >
       {children}
