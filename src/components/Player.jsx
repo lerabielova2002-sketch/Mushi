@@ -1,5 +1,6 @@
 import { forwardRef, useEffect, useMemo, useRef, useState } from 'react'
 import { useFrame } from '@react-three/fiber'
+import { Raycaster, Vector3 } from 'three'
 import { useAnimations, useGLTF } from '@react-three/drei'
 import { useGame } from '../context/GameContext'
 import useKeyboard from '../hooks/useKeyboard'
@@ -19,13 +20,18 @@ const MODEL_PATHS = {
 }
 
 // Головний герой (гриб Муші), тепер з 3D-моделлю і анімаціями.
-const Player = forwardRef(function Player({ platforms = [] }, ref) {
+const Player = forwardRef(function Player({ platforms = [], groundMeshes }, ref) {
   const keys = useKeyboard()
   const { addFluteNote, status } = useGame()
   const velocityY = useRef(0)
   const isGrounded = useRef(true)
   const spaceWasPressed = useRef(false)
   const [activeAnimation, setActiveAnimation] = useState('idle')
+
+  // Промінь, який летить вниз від гравця і шукає землю в моделі рівня
+  const raycaster = useRef(new Raycaster())
+  const rayOrigin = useRef(new Vector3())
+  const rayDown = useRef(new Vector3(0, -1, 0))
 
   const idleModel = useGLTF(MODEL_PATHS.idle)
   const walkModel = useGLTF(MODEL_PATHS.walk)
@@ -88,8 +94,12 @@ const Player = forwardRef(function Player({ platforms = [] }, ref) {
     return () => window.removeEventListener('keydown', playPressedNote)
   }, [addFluteNote, status])
 
-  useFrame((_, delta) => {
+  useFrame((_, rawDelta) => {
     if (!ref || !ref.current || status !== 'playing') return
+
+    // Обмежуємо delta: після важкого завантаження перший кадр може тривати секунди,
+    // і гравець за один кадр пролетів би крізь землю
+    const delta = Math.min(rawDelta, 0.05)
 
     const player = ref.current
     const moveSpeed = 4
@@ -120,12 +130,23 @@ const Player = forwardRef(function Player({ platforms = [] }, ref) {
       )
     })
 
+    // Шукаємо землю під гравцем: тільки там, де в моделі є меш (порожнеча = падіння)
+    let groundY = null
+    if (groundMeshes) {
+      rayOrigin.current.set(player.position.x, player.position.y + 0.5, player.position.z)
+      raycaster.current.set(rayOrigin.current, rayDown.current)
+      const hits = raycaster.current.intersectObjects(groundMeshes, false)
+      if (hits.length > 0) {
+        groundY = hits[0].point.y + 1 // 1 — висота центру гравця над землею
+      }
+    }
+
     if (platformTop) {
       player.position.y = platformTop.position[1] + platformTop.size[1] / 2 + 0.5
       velocityY.current = 0
       isGrounded.current = true
-    } else if (player.position.y <= 1) {
-      player.position.y = 1
+    } else if (groundY !== null && player.position.y <= groundY && velocityY.current <= 0) {
+      player.position.y = groundY
       velocityY.current = 0
       isGrounded.current = true
     } else {
