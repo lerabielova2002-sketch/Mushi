@@ -11,7 +11,7 @@ function Level1() {
   const level = useGLTF('/level1.glb')
   const playerRef = useRef()
   const { setStatus, status } = useGame()
-  const finishPosition = [14, 1, 0]
+  const finishPosition = [2.5, 0.5, 2]
 
   useFrame(() => {
     if (!playerRef.current || status !== 'playing') return
@@ -31,11 +31,7 @@ function Level1() {
     <>
       <primitive object={level.scene} position={[7, 0, 0]} scale={0.025} />
 
-      {/* Земля */}
-      {/* <mesh rotation={[-Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[30, 30]} />
-        <meshStandardMaterial color="green" />
-      </mesh> */}
+  
 
       <mesh position={finishPosition}>
         <boxGeometry args={[1.2, 1.2, 1.2]} />

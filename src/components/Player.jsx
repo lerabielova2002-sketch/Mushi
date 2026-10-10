@@ -153,7 +153,7 @@ const Player = forwardRef(function Player({ platforms = [] }, ref) {
   })
 
   return (
-    <group ref={ref} position={[0, 1, 0]} scale={[0.12, 0.12, 0.12]} rotation={[0, Math.PI / 2, 0]}>
+    <group ref={ref} position={[2.5, 5, -3.5]} scale={[0.05, 0.05, 0.05]} rotation={[0, Math.PI / 2, 0]}>
       <group ref={idleRef} visible={activeAnimation === 'idle'}>
         <primitive object={idleScene} />
       </group>

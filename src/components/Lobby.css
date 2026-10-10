@@ -9,7 +9,7 @@
     radial-gradient(ellipse at 50% 100%, rgba(81, 133, 54, 0.5), transparent 55%),
     linear-gradient(160deg, #14251c, #243b27 55%, #101b16);
   color: #fff7df;
-  font-family: Georgia, 'Times New Roman', serif;
+  font-family: "Bitcount Ink", system-ui;
 }
 
 .lobby-panel {
@@ -56,6 +56,10 @@
   background: transparent;
   cursor: pointer;
   transition: transform 140ms ease, filter 140ms ease;
+  color: white;
+  gap: 20px;
+  font-family: "Bitcount Ink", system-ui;
+  font-size: 30px;
 }
 
 .lobby-image-button:hover {
@@ -94,6 +98,10 @@
 
 .lobby-text-button:hover {
   background: #427849;
+}
+.lobby-button-text{
+  font-family: "Bitcount Ink", system-ui;
+  font-size: 20px;
 }
 
 @media (max-width: 480px) {

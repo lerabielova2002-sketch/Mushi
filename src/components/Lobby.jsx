@@ -8,10 +8,10 @@ function Lobby({ onStart }) {
     return (
       <main className="lobby">
         <section className="lobby-panel">
-          <h1 className="lobby-title">Титри</h1>
-          <p className="lobby-message">Дякуємо, що граєш у Муші!</p>
+          <h1 className="lobby-title">Credits</h1>
+          <p className="lobby-message">Thank you for playing Mushi!</p>
           <button className="lobby-text-button" type="button" onClick={() => setPage('menu')}>
-            Назад до меню
+            Back to Menu
           </button>
         </section>
       </main>
@@ -22,9 +22,9 @@ function Lobby({ onStart }) {
     return (
       <main className="lobby">
         <section className="lobby-panel">
-          <h1 className="lobby-title">Дякуємо за гру!</h1>
+          <h1 className="lobby-title">Thank you for playing!</h1>
           <button className="lobby-text-button" type="button" onClick={() => setPage('menu')}>
-            Повернутися до меню
+            Back to Menu
           </button>
         </section>
       </main>
@@ -33,28 +33,28 @@ function Lobby({ onStart }) {
 
   return (
     <main className="lobby">
-      <section className="lobby-panel" aria-label="Головне меню">
-        <h1 className="lobby-title">Муші</h1>
-        <p className="lobby-subtitle">Пригода починається тут</p>
-        <nav className="lobby-menu" aria-label="Головне меню">
-          <button className="lobby-image-button" type="button" onClick={onStart} aria-label="Почати гру">
-            <img src="/exit.jpg" alt="Старт" />
+      <section className="lobby-panel" aria-label="Main Menu">
+        <h1 className="lobby-title">Mushi</h1>
+        <p className="lobby-subtitle">The adventure begins here</p>
+        <nav className="lobby-menu" aria-label="Main Menu">
+          <button className="lobby-image-button" type="button" onClick={onStart} aria-label="Start Game">
+            <div className="lobby-button-text">Start game</div>
           </button>
           <button
             className="lobby-image-button lobby-small-button"
             type="button"
             onClick={() => setPage('credits')}
-            aria-label="Титри"
+            aria-label="Credits"
           >
-            <img src="/green-start-button-on-transparent-background-free-png.webp" alt="Титри" />
+            <div className="lobby-button-text">Credits</div>
           </button>
           <button
             className="lobby-image-button lobby-small-button"
             type="button"
             onClick={() => setPage('exit')}
-            aria-label="Вийти з гри"
+            aria-label="Exit Game"
           >
-            <img src="/images.jpg" alt="Вихід" />
+            <div className="lobby-button-text">Exit game</div>
           </button>
         </nav>
       </section>
