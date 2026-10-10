@@ -94,8 +94,8 @@ const Player = forwardRef(function Player({ platforms = [] }, ref) {
     const player = ref.current
     const moveSpeed = 4
 
-    const moveX = (keys.KeyD ? 1 : 0) - (keys.KeyA ? 1 : 0)
-    const moveZ = (keys.KeyS ? 1 : 0) - (keys.KeyW ? 1 : 0)
+    const moveX = (keys.KeyW ? 1 : 0) - (keys.KeyS ? 1 : 0)
+    const moveZ = (keys.KeyD ? 1 : 0) - (keys.KeyA ? 1 : 0)
     const isMoving = Math.abs(moveX) > 0.01 || Math.abs(moveZ) > 0.01
 
     player.position.x += moveX * moveSpeed * delta
@@ -153,7 +153,7 @@ const Player = forwardRef(function Player({ platforms = [] }, ref) {
   })
 
   return (
-    <group ref={ref} position={[0, 1, 0]} scale={[0.8, 0.8, 0.8]} rotation={[0, Math.PI / 2, 0]}>
+    <group ref={ref} position={[0, 1, 0]} scale={[0.12, 0.12, 0.12]} rotation={[0, Math.PI / 2, 0]}>
       <group ref={idleRef} visible={activeAnimation === 'idle'}>
         <primitive object={idleScene} />
       </group>

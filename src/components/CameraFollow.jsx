@@ -1,6 +1,9 @@
 import { useEffect, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 
+const MIN_DISTANCE = 3
+const MAX_DISTANCE = 20
+
 // Камера їде за героєм і обертається за ПКМ.
 function CameraFollow({ targetRef, offset = [0, 5, 10] }) {
   const yaw = useRef(-Math.PI / 4)
@@ -22,10 +25,18 @@ function CameraFollow({ targetRef, offset = [0, 5, 10] }) {
       const dx = event.clientX - lastPointer.current.x
       const dy = event.clientY - lastPointer.current.y
 
-      yaw.current += dx * 0.005
+      yaw.current -= dx * 0.005
       pitch.current = Math.max(-1.2, Math.min(1.2, pitch.current + dy * 0.004))
 
       lastPointer.current = { x: event.clientX, y: event.clientY }
+    }
+
+    const handleWheel = (event) => {
+      event.preventDefault()
+      distance.current = Math.max(
+        MIN_DISTANCE,
+        Math.min(MAX_DISTANCE, distance.current + event.deltaY * 0.01),
+      )
     }
 
     const handlePointerUp = () => {
@@ -37,12 +48,14 @@ function CameraFollow({ targetRef, offset = [0, 5, 10] }) {
     window.addEventListener('pointerdown', handlePointerDown)
     window.addEventListener('pointermove', handlePointerMove)
     window.addEventListener('pointerup', handlePointerUp)
+    window.addEventListener('wheel', handleWheel, { passive: false })
     window.addEventListener('contextmenu', preventContextMenu)
 
     return () => {
       window.removeEventListener('pointerdown', handlePointerDown)
       window.removeEventListener('pointermove', handlePointerMove)
       window.removeEventListener('pointerup', handlePointerUp)
+      window.removeEventListener('wheel', handleWheel)
       window.removeEventListener('contextmenu', preventContextMenu)
     }
   }, [])
